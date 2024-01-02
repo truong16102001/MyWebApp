@@ -28,6 +28,15 @@ namespace MyWebApp.Data
 
         [ForeignKey("CategoryId")]
         public Category? Category { get; set; }
-      
+
+        //relationship
+        public ICollection<OrderDetails> OrderDetails { get; set; }
+
+
+        public Product()
+        {
+            OrderDetails = new List<OrderDetails>();
+        }
+
     }
 }
