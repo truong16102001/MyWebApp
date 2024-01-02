@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MyWebApiApp.Models;
 using MyWebApp.Data;
+using MyWebApp.Models;
+using MyWebApp.Services;
 
 namespace MyWebApp.Controllers
 {
@@ -9,30 +11,24 @@ namespace MyWebApp.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        private readonly MyDbContext _context;
-        public CategoriesController(MyDbContext context)
+        private readonly ICategoryRepository _categoryRepository;
+        public CategoriesController(ICategoryRepository categoryRepository)
         {
-            _context = context;
+            _categoryRepository = categoryRepository;
         }
 
-
-        private Category GetCategoryById(int id)
-        {
-            try
-            {
-                return _context.Categories.FirstOrDefault(c => c.CategoryId == id);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            var categories = _context.Categories.ToList();
-            return Ok(categories);
+            try
+            {
+                return Ok(_categoryRepository.GetAll());
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpGet("{id}")]
@@ -40,57 +36,42 @@ namespace MyWebApp.Controllers
         {
             try
             {
-                var c = GetCategoryById(id);
+                var c = _categoryRepository.GetById(id);
                 if (c == null) return NotFound();
                 return Ok(c);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
         [HttpPost]
-        public IActionResult Create(CategoryVM categoryVM)
+        public IActionResult Create(CategoryModel categoryModel)
         {
             try
             {
-                var c = new Category
-                {
-                    CategoryName = categoryVM.CategoryName
-                };
-                _context.Add(c);
-                _context.SaveChanges();
-                return Ok(new
-                {
-                    Success = true,
-                    Data = c
-                });
+               var category = _categoryRepository.Add(categoryModel);
+                return Ok(category);
             }
-            catch (Exception ex)
+            catch 
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
         [HttpPut("{id}")]
         public IActionResult Edit(int id, CategoryVM categoryEdit)
         {
+            if (id != categoryEdit.CategoryId) return BadRequest();
             try
             {
-                var p = GetCategoryById(id);
-                if (p == null) return NotFound();
-
-                if (id != p.CategoryId) return BadRequest();
-
-                //update
-                p.CategoryName = categoryEdit.CategoryName;
-                _context.SaveChanges();
+               _categoryRepository.Update(categoryEdit);
                 return NoContent();
             }
-            catch (Exception ex)
+            catch 
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -99,46 +80,14 @@ namespace MyWebApp.Controllers
         {
             try
             {
-                var p = GetCategoryById(id);
-                if (p == null) return NotFound();
-
-                if (id != p.CategoryId) return BadRequest();
-
-                //delete
-                _context.Remove(p);
-                _context.SaveChanges();
+                _categoryRepository.Delete(id);
                 return Ok();
             }
-            catch (Exception ex)
+            catch
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
-
-        [HttpPatch("{id}")]
-        public IActionResult Patch(int id, CategoryVM categoryPatch)
-        {
-            try
-            {
-                var p = GetCategoryById(id);
-                if (p == null) return NotFound();
-
-                if (id != p.CategoryId) return BadRequest();
-
-                //update only the provided fields
-                if (!string.IsNullOrEmpty(categoryPatch.CategoryName))
-                    p.CategoryName = categoryPatch.CategoryName;
-                _context.SaveChanges();
-                return Ok(new
-                {
-                    Success = true,
-                    Data = p
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+      
     }
 }

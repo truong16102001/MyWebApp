@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MyWebApiApp.Models;
 using MyWebApp.Data;
+using MyWebApp.Models;
+using MyWebApp.Services;
 
 namespace MyWebApp.Controllers
 {
@@ -9,30 +11,26 @@ namespace MyWebApp.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly MyDbContext _context;
+        private readonly IProductRepository _productRepository;
 
-        public ProductsController(MyDbContext context)
+        public ProductsController(IProductRepository context)
         {
-            _context = context;
+            _productRepository = context;
         }
 
-        private Product GetProductById(string id)
-        {
-            try
-            {
-                return _context.Products.FirstOrDefault(pr => pr.ProductId == Guid.Parse(id));
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
+       
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(_context.Products.ToList());
+            try
+            {
+                return Ok(_productRepository.GetAll());
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpGet("{id}")]
@@ -40,64 +38,43 @@ namespace MyWebApp.Controllers
         {
             try
             {
-                var p = GetProductById(id);
-                if (p == null) return NotFound();
-                return Ok(p);
+                var c = _productRepository.GetById(id);
+                if (c == null) return NotFound();
+                return Ok(c);
             }
-            catch (Exception ex)
+            catch 
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
 
         [HttpPost]
-        public IActionResult Create(ProductVM productVM)
+        public IActionResult Create(ProductModel productModel)
         {
-            var p = new Product
+            try
             {
-                ProductId = Guid.NewGuid(),
-                ProductName = productVM.ProductName,
-                ProductDescription = productVM.ProductDescription,
-                UnitPrice = productVM.UnitPrice,
-                UnitInStock = productVM.UnitInStock,
-                CategoryId = productVM.CategoryId != null ? productVM.CategoryId : null
-            };
-            _context.Add(p);
-            _context.SaveChanges();
-            return Ok(new
+                var p = _productRepository.Add(productModel);
+                return Ok(p);
+            }
+            catch
             {
-                Success = true,
-                Data = p
-            });
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpPut("{id}")]
         public IActionResult Edit(string id, ProductVM productEdit)
         {
+            if (Guid.Parse(id) != productEdit.ProductId) return BadRequest();
             try
             {
-                var p = GetProductById(id);
-                if (p == null) return NotFound();
-
-                if (Guid.Parse(id) != p.ProductId) return BadRequest();
-
-                //update
-                p.ProductName = productEdit.ProductName;
-                p.ProductDescription = productEdit.ProductDescription;
-                p.UnitPrice = productEdit.UnitPrice;
-                p.UnitInStock = productEdit.UnitInStock;
-
-                _context.SaveChanges();
-                return Ok(new
-                {
-                    Success = true,
-                    Data = p
-                });
+                _productRepository.Update(productEdit);
+                return NoContent();
             }
-            catch (Exception ex)
+            catch
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -106,63 +83,13 @@ namespace MyWebApp.Controllers
         {
             try
             {
-                var p = GetProductById(id);
-                if (p == null) return NotFound();
-
-                if (Guid.Parse(id) != p.ProductId) return BadRequest();
-
-                //delete
-                _context.Remove(p);
-                _context.SaveChanges();
-
+                _productRepository.Delete(id);
                 return Ok();
             }
-            catch (Exception ex)
+            catch
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
-        }
-
-
-        [HttpPatch("{id}")]
-        public IActionResult Patch(string id, ProductVM productPatch)
-        {
-            try
-            {
-                var p = GetProductById(id);
-                if (p == null) return NotFound();
-
-                if (Guid.Parse(id) != p.ProductId) return BadRequest();
-
-                //update only the provided fields
-                if (!string.IsNullOrEmpty(productPatch.ProductName))
-                    p.ProductName = productPatch.ProductName;
-
-                if (!string.IsNullOrEmpty(productPatch.ProductDescription))
-                    p.ProductDescription = productPatch.ProductDescription;
-
-                if (productPatch.UnitPrice != null)
-                {
-                    p.UnitPrice = productPatch.UnitPrice;
-                }
-
-                if (productPatch.UnitInStock != null)
-                {
-                    p.UnitInStock = productPatch.UnitInStock;
-                }
-
-                _context.SaveChanges();
-
-                return Ok(new
-                {
-                    Success = true,
-                    Data = p
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        }       
     }
 }

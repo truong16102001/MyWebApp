@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MyWebApp.Data;
+using MyWebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,10 @@ builder.Services.AddDbContext<MyDbContext>(option =>
     var ConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("MyDB");
     option.UseSqlServer(ConnectionString);
 });
+
+//repository pattern
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 var app = builder.Build();
 

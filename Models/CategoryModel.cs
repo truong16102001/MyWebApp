@@ -1,11 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MyWebApiApp.Models
+namespace MyWebApp.Models
 {
-    public class CategoryVM
-    {
-        public int CategoryId { get; set; }
+    public class CategoryModel
+    {     
         public string CategoryName { get; set; }
-
     }
 }
