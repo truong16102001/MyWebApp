@@ -11,7 +11,7 @@ namespace MyWebApp.Services
         public CategoryRepository(MyDbContext context) {
             _context = context;
         }
-        public CategoryVM Add(CategoryModel categoryModel)
+        public CategoryVM Add(CategoryManipulationModel categoryModel)
         {
             var category = new Category
             {

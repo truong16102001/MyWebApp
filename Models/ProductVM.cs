@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using MyWebApp.Data;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
@@ -14,7 +15,7 @@ namespace MyWebApiApp.Models
       
         public int UnitInStock { get; set; }
 
-        public int? CategoryId { get; set; }
+        public CategoryVM? CategoryVM { get; set; }
     }
 
     

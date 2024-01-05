@@ -1,4 +1,5 @@
 ﻿using MyWebApiApp.Models;
+using MyWebApp.Data;
 using MyWebApp.Models;
 
 namespace MyWebApp.Services
@@ -6,9 +7,12 @@ namespace MyWebApp.Services
     public interface IProductRepository
     {
         List<ProductVM> GetAll();
-        ProductVM GetById(string id);
-        ProductVM Add(ProductModel productModel);
-        void Update(ProductVM productVM);
-        void Delete(string id);
+        List<ProductVM> GetProductsByConditions(FilterOptions filterOptions);
+        ProductVM GetById(Guid id);
+        ProductVM Add(ProductManipulationModel productModel);
+        ProductVM Update(ProductManipulationModel productVM);
+        void Delete(Guid id);
+
+        CategoryVM GetCategoryById(int? categoryId);
     }
 }

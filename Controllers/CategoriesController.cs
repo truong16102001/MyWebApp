@@ -40,15 +40,19 @@ namespace MyWebApp.Controllers
                 if (c == null) return NotFound();
                 return Ok(c);
             }
-            catch (Exception ex)
+            catch 
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
         [HttpPost]
-        public IActionResult Create(CategoryModel categoryModel)
+        public IActionResult Create(CategoryManipulationModel categoryModel)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             try
             {
                var category = _categoryRepository.Add(categoryModel);
@@ -63,7 +67,16 @@ namespace MyWebApp.Controllers
         [HttpPut("{id}")]
         public IActionResult Edit(int id, CategoryVM categoryEdit)
         {
-            if (id != categoryEdit.CategoryId) return BadRequest();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Kiểm tra điều kiện
+            if (id != categoryEdit.CategoryId)
+            {
+                return BadRequest("CategoryId in the URL does not match CategoryId in the model.");
+            }
             try
             {
                _categoryRepository.Update(categoryEdit);

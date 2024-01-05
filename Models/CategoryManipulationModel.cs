@@ -2,7 +2,7 @@
 
 namespace MyWebApp.Models
 {
-    public class CategoryModel
+    public class CategoryManipulationModel
     {     
         public string CategoryName { get; set; }
     }

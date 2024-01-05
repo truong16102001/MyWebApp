@@ -9,5 +9,10 @@
         public string Password { get; set; }
 
         public ICollection<Order> Orders { get; set; }
+
+        public User()
+        {
+            Orders = new List<Order>();
+        }
     }
 }

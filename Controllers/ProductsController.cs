@@ -33,8 +33,22 @@ namespace MyWebApp.Controllers
             }
         }
 
+        [HttpGet("filter")]
+        public IActionResult GetProductsByConditions([FromQuery] FilterOptions filterOptions)
+        {
+            try
+            {
+                var result = _productRepository.GetProductsByConditions(filterOptions);
+                return Ok(result);
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
         [HttpGet("{id}")]
-        public IActionResult GetById(string id)
+        public IActionResult GetById(Guid id)
         {
             try
             {
@@ -50,10 +64,21 @@ namespace MyWebApp.Controllers
 
 
         [HttpPost]
-        public IActionResult Create(ProductModel productModel)
+        public IActionResult Create(ProductManipulationModel productModel)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
+                var category = _productRepository.GetCategoryById(productModel.CategoryId);
+                if (category == null)
+                {
+                    return BadRequest("Invalid CategoryId");
+                }
+
                 var p = _productRepository.Add(productModel);
                 return Ok(p);
             }
@@ -64,13 +89,23 @@ namespace MyWebApp.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Edit(string id, ProductVM productEdit)
+        public IActionResult Edit(Guid id, ProductManipulationModel productEdit)
         {
-            if (Guid.Parse(id) != productEdit.ProductId) return BadRequest();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Kiểm tra điều kiện
+            if (id != productEdit.ProductId)
+            {
+                return BadRequest("ProductId in the URL does not match ProductId in the model.");
+            }
             try
             {
-                _productRepository.Update(productEdit);
-                return NoContent();
+         
+                var result = _productRepository.Update(productEdit);
+                return Ok(result);
             }
             catch
             {
@@ -79,10 +114,17 @@ namespace MyWebApp.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public IActionResult Delete(Guid id)
         {
             try
             {
+                var existingProduct = _productRepository.GetById(id);
+
+                if (existingProduct == null)
+                {
+                    return NotFound();
+                }
+
                 _productRepository.Delete(id);
                 return Ok();
             }

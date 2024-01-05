@@ -13,5 +13,10 @@ namespace MyWebApp.Data
         public string CategoryName { get; set; }
 
         public ICollection<Product> Products { get; set; }
+
+        public Category()
+        {
+            Products = new List<Product>();
+        }
     }
 }
