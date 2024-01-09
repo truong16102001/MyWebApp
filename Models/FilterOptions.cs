@@ -1,4 +1,4 @@
-﻿namespace MyWebApp.Services
+﻿namespace MyWebApp.Models
 {
     public class FilterOptions
     {

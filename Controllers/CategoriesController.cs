@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyWebApiApp.Models;
 using MyWebApp.Data;
@@ -47,6 +48,7 @@ namespace MyWebApp.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public IActionResult Create(CategoryManipulationModel categoryModel)
         {
             if (!ModelState.IsValid)

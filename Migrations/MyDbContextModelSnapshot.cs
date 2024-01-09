@@ -37,7 +37,7 @@ namespace MyWebApp.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("MyWebApp.Data.Order", b =>
@@ -133,7 +133,7 @@ namespace MyWebApp.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("MyWebApp.Data.User", b =>
